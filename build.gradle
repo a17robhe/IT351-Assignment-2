@@ -25,3 +25,25 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+task archive(type: Zip) {
+    def projectDir = "${projectDir.parentFile}/"
+    delete fileTree(projectDir) {
+        include '*.zip'
+    }
+
+    def projectDirFile = new File(projectDir)
+    from projectDirFile
+    destinationDirectory = projectDirFile
+    include '**'
+    exclude '*.zip'
+    exclude '**/*.lock'
+    exclude 'app/build'
+    archiveFileName = {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'describe', '--match=', '--always', '--dirty', '--abbrev=7'
+            standardOutput = stdout
+        }
+        "assignment_"+stdout.toString().trim()
+    }() + ".zip"
+}
